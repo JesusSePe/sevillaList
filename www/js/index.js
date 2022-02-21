@@ -3,22 +3,72 @@
 // See https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready
 document.addEventListener('deviceready', onDeviceReady, false);
 
+const taques = "tasques";
+
+function refresca_view(tasques) {
+    console.log(tasques);
+
+    //buidar tasklist view
+    $("li").remove();
+
+    // omplir les dades view
+    var cont = 0;
+    for(const tasca of tasques) {
+        $('ul').append("<li pos='"+cont+"'class='ui-li-has-alt ui-last-child'><a class='ui-btn' href='#'>"+tasca+"</a><a class='ui-icon ui-icon-delete ui-icon-shadow ui-btn ui-btn-icon-notext ui-icon-carat-r' title></a></li>");
+        cont++;
+    }
+    // ELIMINAR TASCA
+    $(".ui-icon-delete").click(function() {
+        del = $(this).parent().attr('pos');
+        console.log(del);
+        db = JSON.parse(localStorage.getItem("tasques"));
+        db.splice(del, 1);
+        localStorage.setItem("tasques", JSON.stringify(db));
+        refresca_view(db);
+    });
+}
+
+function saveTask() {
+    //capturem text
+    var text = $('#newTask').val();
+
+    // afegr task a localStorage
+    var tasques = JSON.parse(localStorage.getItem("tasques"));
+    tasques.push(text);
+    localStorage.setItem("tasques", JSON.stringify(tasques));
+
+    // Vuidar el input
+    $('#newTask').val('');
+
+    // refrescar view
+    refresca_view(tasques);
+}
+
+
 function onDeviceReady() {
     // Cordova is now initialized. Have fun!
 
     console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
     //document.getElementById('deviceready').classList.add('ready');
-    $(document).ready(function(){
-        init();
-    });
 
-    function init() {
-        $('#addButton').click(function() {
-            let taskName = $('#newTask').val();
-            $('ul').append("<li>" + taskName + "</li>");
-        });
+
+    // inicialitzar array tasques al localStorage si no existeix
+    if( !localStorage.getItem("tasques") ) {
+        localStorage.setItem("tasques", JSON.stringify([]) );
     }
 
-		
+
+    // inicialitzem tasklist amb les dades existents
+    var dades = JSON.parse(localStorage.getItem("tasques"));
+    refresca_view(dades);
+    $("#addButton").click(function() {
+        saveTask();
+    });
+
+    $('#newTask').on('keypress',function(e) {
+        if(e.which == 13) {
+            saveTask();
+        }
+    });
 
 }
